@@ -1,25 +1,24 @@
 package com.example.entryexitproject
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -27,96 +26,179 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LeaveApplicationScreen() {
-    var reason by remember { mutableStateOf("") }
-    var showStartDatePicker by remember { mutableStateOf(false) }
-    var showEndDatePicker by remember { mutableStateOf(false) }
-    val startDatePickerState = rememberDatePickerState()
-    val endDatePickerState = rememberDatePickerState()
-    var selectedStartDate by remember { mutableStateOf<Long?>(null) }
-    var selectedEndDate by remember { mutableStateOf<Long?>(null) }
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("user_details", Context.MODE_PRIVATE)
+    val studentName = sharedPreferences.getString("studentName", "") ?: ""
+    val email = sharedPreferences.getString("email", "") ?: ""
+    val phoneNumber = sharedPreferences.getString("phoneNumber", "") ?: ""
+    val rollNumber = sharedPreferences.getString("rollNumber", "") ?: ""
+
+    var degree by remember { mutableStateOf("Please Select") }
+    var emailDuringLeave by remember { mutableStateOf("") }
+    var phoneDuringLeave by remember { mutableStateOf("") }
+    var duration by remember { mutableStateOf("") }
+    var transport by remember { mutableStateOf("") }
+    var block by remember { mutableStateOf("") }
+    var hostel by remember { mutableStateOf("") }
+    var purpose by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var parentsPhone by remember { mutableStateOf("") }
+
+    var showLeavingDatePicker by remember { mutableStateOf(false) }
+    var showReturnDatePicker by remember { mutableStateOf(false) }
+    var showLeavingTimePicker by remember { mutableStateOf(false) }
+    var showReturnTimePicker by remember { mutableStateOf(false) }
+
+    val leavingDatePickerState = rememberDatePickerState()
+    val returnDatePickerState = rememberDatePickerState()
+    val leavingTimePickerState = rememberTimePickerState()
+    val returnTimePickerState = rememberTimePickerState()
+
+    var selectedLeavingDate by remember { mutableStateOf<Long?>(null) }
+    var selectedReturnDate by remember { mutableStateOf<Long?>(null) }
+    var selectedLeavingTime by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    var selectedReturnTime by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+
+    val degrees = listOf("B.Tech", "M.Tech", "Ph.D", "JRF")
+    var degreeExpanded by remember { mutableStateOf(false) }
 
     Scaffold {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.Start
         ) {
-            TextField(
-                value = reason,
-                onValueChange = { reason = it },
-                label = { Text("Reason for Leave") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
-            )
+            Text("Personal Information", fontWeight = FontWeight.Bold, fontSize = 20.sp)
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { showStartDatePicker = true },
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(selectedStartDate?.let { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it)) } ?: "Select Start Date")
+
+            OutlinedTextField(value = studentName, onValueChange = {}, label = { Text("Name") }, readOnly = true, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(value = email, onValueChange = {}, label = { Text("Email") }, readOnly = true, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(value = phoneNumber, onValueChange = {}, label = { Text("Phone Number") }, readOnly = true, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(value = rollNumber, onValueChange = {}, label = { Text("Student Roll Number") }, readOnly = true, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ExposedDropdownMenuBox(expanded = degreeExpanded, onExpandedChange = { degreeExpanded = !degreeExpanded }) {
+                OutlinedTextField(
+                    value = degree,
+                    onValueChange = {},
+                    label = { Text("Degree") },
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = degreeExpanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor()
+                )
+                ExposedDropdownMenu(expanded = degreeExpanded, onDismissRequest = { degreeExpanded = false }) {
+                    degrees.forEach {
+                        DropdownMenuItem(text = { Text(it) }, onClick = { degree = it; degreeExpanded = false })
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            Text("Details of Leave/Absence", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { showLeavingDatePicker = true }, modifier = Modifier.weight(1f)) {
+                    Text(selectedLeavingDate?.let { SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date(it)) } ?: "Leaving Date")
+                }
+                OutlinedButton(onClick = { showLeavingTimePicker = true }, modifier = Modifier.weight(1f)) {
+                     Text(selectedLeavingTime?.let { "%02d:%02d".format(it.first, it.second) } ?: "Leaving Time")
+                }
+            }
+             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { showReturnDatePicker = true }, modifier = Modifier.weight(1f)) {
+                    Text(selectedReturnDate?.let { SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date(it)) } ?: "Return Date")
+                }
+                 OutlinedButton(onClick = { showReturnTimePicker = true }, modifier = Modifier.weight(1f)) {
+                     Text(selectedReturnTime?.let { "%02d:%02d".format(it.first, it.second) } ?: "Return Time")
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { showEndDatePicker = true },
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(selectedEndDate?.let { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it)) } ?: "Select End Date")
-            }
+            
+            OutlinedTextField(value = duration, onValueChange = { duration = it }, label = { Text("Duration of Leave") }, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { /* Handle leave application submission */ },
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Apply for Leave")
+            
+            OutlinedTextField(value = transport, onValueChange = { transport = it }, label = { Text("Mode of Transport") }, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(value = block, onValueChange = { block = it }, label = { Text("Block/Floor") }, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(value = hostel, onValueChange = { hostel = it }, label = { Text("Hostel Name") }, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(value = purpose, onValueChange = { purpose = it }, label = { Text("Purpose of Leave") }, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("Address during leave") }, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            OutlinedTextField(value = parentsPhone, onValueChange = { parentsPhone = it }, label = { Text("Parent's Phone during leave") }, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(onClick = { /* Handle submission */ }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color(0xFF4CAF50))) {
+                Text("Submit", color = androidx.compose.ui.graphics.Color.White)
             }
         }
     }
 
-    if (showStartDatePicker) {
+    if (showLeavingDatePicker) {
         DatePickerDialog(
-            onDismissRequest = { showStartDatePicker = false },
-            confirmButton = {
-                Button(onClick = {
-                    selectedStartDate = startDatePickerState.selectedDateMillis
-                    showStartDatePicker = false
-                }) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showStartDatePicker = false }) {
-                    Text("Cancel")
-                }
-            }
-        ) {
-            DatePicker(state = startDatePickerState)
-        }
+            onDismissRequest = { showLeavingDatePicker = false },
+            confirmButton = { Button(onClick = { selectedLeavingDate = leavingDatePickerState.selectedDateMillis; showLeavingDatePicker = false }) { Text("OK") } },
+            dismissButton = { Button(onClick = { showLeavingDatePicker = false }) { Text("Cancel") } }
+        ) { DatePicker(state = leavingDatePickerState) }
     }
 
-    if (showEndDatePicker) {
+    if (showReturnDatePicker) {
         DatePickerDialog(
-            onDismissRequest = { showEndDatePicker = false },
-            confirmButton = {
-                Button(onClick = {
-                    selectedEndDate = endDatePickerState.selectedDateMillis
-                    showEndDatePicker = false
-                }) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showEndDatePicker = false }) {
-                    Text("Cancel")
-                }
-            }
-        ) {
-            DatePicker(state = endDatePickerState)
-        }
+            onDismissRequest = { showReturnDatePicker = false },
+            confirmButton = { Button(onClick = { selectedReturnDate = returnDatePickerState.selectedDateMillis; showReturnDatePicker = false }) { Text("OK") } },
+            dismissButton = { Button(onClick = { showReturnDatePicker = false }) { Text("Cancel") } }
+        ) { DatePicker(state = returnDatePickerState) }
     }
+    
+    if (showLeavingTimePicker) {
+        TimePickerDialog(
+            onDismissRequest = { showLeavingTimePicker = false },
+            onConfirm = { selectedLeavingTime = Pair(leavingTimePickerState.hour, leavingTimePickerState.minute); showLeavingTimePicker = false },
+        ) { TimePicker(state = leavingTimePickerState) }
+    }
+
+    if (showReturnTimePicker) {
+        TimePickerDialog(
+            onDismissRequest = { showReturnTimePicker = false },
+            onConfirm = { selectedReturnTime = Pair(returnTimePickerState.hour, returnTimePickerState.minute); showReturnTimePicker = false },
+        ) { TimePicker(state = returnTimePickerState) }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimePickerDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Select Time") },
+        text = { content() },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismissRequest) {
+                Text("Cancel")
+            }
+        }
+    )
 }
