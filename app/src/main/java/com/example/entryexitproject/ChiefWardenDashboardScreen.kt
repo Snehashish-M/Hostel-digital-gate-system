@@ -30,13 +30,17 @@ import androidx.navigation.NavController
 @Composable
 fun ChiefWardenDashboardScreen(navController: NavController) {
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("user_details", Context.MODE_PRIVATE)
-    val wardenName = sharedPreferences.getString("studentName", "") ?: ""
-    val email = sharedPreferences.getString("email", "") ?: ""
-    val phoneNumber = sharedPreferences.getString("phoneNumber", "") ?: ""
+    val sessionPrefs = context.getSharedPreferences("session", Context.MODE_PRIVATE)
+    val currentUserEmail = sessionPrefs.getString("currentUserEmail", "") ?: ""
+    val userPrefs = context.getSharedPreferences(currentUserEmail, Context.MODE_PRIVATE)
+    val wardenName = userPrefs.getString("studentName", "") ?: ""
+    val email = userPrefs.getString("email", "") ?: ""
+    val phoneNumber = userPrefs.getString("phoneNumber", "") ?: ""
 
     var menuExpanded by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
+
+    var allApplications by remember { mutableStateOf(LeaveApplicationRepository.getAllLeaveApplications(context)) }
 
     Scaffold(
         topBar = {
@@ -61,8 +65,8 @@ fun ChiefWardenDashboardScreen(navController: NavController) {
                             DropdownMenuItem(
                                 text = { Text("Logout") },
                                 onClick = {
-                                    sharedPreferences.edit { clear() }
-                                    navController.navigate("signup") { popUpTo(0) }
+                                    sessionPrefs.edit { clear() }
+                                    navController.navigate("login") { popUpTo(0) }
                                     menuExpanded = false
                                 }
                             )
@@ -78,7 +82,7 @@ fun ChiefWardenDashboardScreen(navController: NavController) {
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            items(LeaveApplicationRepository.leaveApplications) { application ->
+            items(allApplications) { application ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -100,18 +104,14 @@ fun ChiefWardenDashboardScreen(navController: NavController) {
                         if (application.status == "Pending") {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Button(onClick = { 
-                                    val index = LeaveApplicationRepository.leaveApplications.indexOf(application)
-                                    if (index != -1) {
-                                        LeaveApplicationRepository.leaveApplications[index] = application.copy(status = "Approved")
-                                    }
+                                    LeaveApplicationRepository.updateLeaveApplicationStatus(context, application.id, "Approved")
+                                    allApplications = LeaveApplicationRepository.getAllLeaveApplications(context)
                                 }) {
                                     Text("Approve")
                                 }
                                 Button(onClick = { 
-                                    val index = LeaveApplicationRepository.leaveApplications.indexOf(application)
-                                    if (index != -1) {
-                                        LeaveApplicationRepository.leaveApplications[index] = application.copy(status = "Rejected")
-                                    }
+                                    LeaveApplicationRepository.updateLeaveApplicationStatus(context, application.id, "Rejected")
+                                    allApplications = LeaveApplicationRepository.getAllLeaveApplications(context)
                                 }) {
                                     Text("Reject")
                                 }

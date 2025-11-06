@@ -28,9 +28,11 @@ import java.util.Locale
 @Composable
 fun LeaveApplicationScreen() {
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("user_details", Context.MODE_PRIVATE)
-    val studentName = sharedPreferences.getString("studentName", "") ?: ""
-    val rollNumber = sharedPreferences.getString("rollNumber", "") ?: ""
+    val sessionPrefs = context.getSharedPreferences("session", Context.MODE_PRIVATE)
+    val currentUserEmail = sessionPrefs.getString("currentUserEmail", "") ?: ""
+    val userPrefs = context.getSharedPreferences(currentUserEmail, Context.MODE_PRIVATE)
+    val studentName = userPrefs.getString("studentName", "") ?: ""
+    val rollNumber = userPrefs.getString("rollNumber", "") ?: ""
 
     var degree by remember { mutableStateOf("Please Select") }
     var duration by remember { mutableStateOf("") }
@@ -158,7 +160,7 @@ fun LeaveApplicationScreen() {
                     address = address,
                     parentsPhone = parentsPhone
                 )
-                LeaveApplicationRepository.leaveApplications.add(application)
+                LeaveApplicationRepository.saveLeaveApplication(context, application)
                 submissionStatus = "Leave application submitted successfully!"
                  Toast.makeText(context, "Leave application submitted!", Toast.LENGTH_SHORT).show()
             }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color(0xFF4CAF50))) {
