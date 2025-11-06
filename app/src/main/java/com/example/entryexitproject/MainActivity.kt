@@ -52,7 +52,14 @@ class MainActivity : ComponentActivity() {
                         LoginScreen(navController = navController)
                     }
                     composable("signup") {
-                        SignUpScreen(onSignUp = { navController.navigate("login") })
+                        SignUpScreen(navController = navController, onSignUp = {
+                            val signedUpUserType = getSharedPreferences("session", MODE_PRIVATE).getString("userType", "Student")
+                            if (signedUpUserType == "Student") {
+                                navController.navigate("dashboard") { popUpTo("signup") { inclusive = true } }
+                            } else {
+                                navController.navigate("chief_warden_dashboard") { popUpTo("signup") { inclusive = true } }
+                            }
+                        })
                     }
                     composable("dashboard") {
                         DashboardScreen(navController = navController)

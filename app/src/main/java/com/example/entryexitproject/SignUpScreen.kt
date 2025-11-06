@@ -19,10 +19,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreen(onSignUp: () -> Unit) {
+fun SignUpScreen(navController: NavController, onSignUp: () -> Unit) {
     var studentName by remember { mutableStateOf("") }
     var rollNumber by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -132,6 +133,9 @@ fun SignUpScreen(onSignUp: () -> Unit) {
             }
         }, shape = RoundedCornerShape(8.dp)) {
             Text("Sign Up")
+        }
+        TextButton(onClick = { navController.navigate("login") }) {
+            Text("Already have an account? Sign In")
         }
     }
 }
