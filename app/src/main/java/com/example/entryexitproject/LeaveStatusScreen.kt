@@ -38,6 +38,7 @@ fun LeaveStatusScreen(navController: NavController) {
     val currentUserEmail = sessionPrefs.getString("currentUserEmail", "") ?: ""
     val userPrefs = context.getSharedPreferences(currentUserEmail, Context.MODE_PRIVATE)
     val studentName = userPrefs.getString("studentName", "") ?: ""
+    val phoneNumber = userPrefs.getString("phoneNumber", "") ?: ""
 
     val allApplications = LeaveApplicationRepository.getAllLeaveApplications(context)
     val studentApplications = allApplications.filter { it.studentName == studentName }
@@ -46,13 +47,18 @@ fun LeaveStatusScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Leave Application Status") },
+            CenterAlignedTopAppBar(
+                title = { Text("Leave Application Status", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         }
     ) { innerPadding ->
@@ -101,8 +107,10 @@ fun LeaveStatusScreen(navController: NavController) {
                             if (application.status == "Approved") {
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Button(onClick = {
-                                    val qrDetails = "Name: ${application.studentName}\n"
+                                    val qrDetails = "Type: Leave\n"
+                                        .plus("Name: ${application.studentName}\n")
                                         .plus("Roll Number: ${application.rollNumber}\n")
+                                        .plus("Phone Number: $phoneNumber\n")
                                         .plus("Leaving: ${application.leavingDate} at ${application.leavingTime}\n")
                                         .plus("Returning: ${application.returnDate} at ${application.returnTime}\n")
                                         .plus("Duration: ${application.duration}\n")

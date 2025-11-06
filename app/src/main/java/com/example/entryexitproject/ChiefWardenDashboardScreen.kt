@@ -44,8 +44,8 @@ fun ChiefWardenDashboardScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Leave Applications") },
+            CenterAlignedTopAppBar(
+                title = { Text("Leave Applications", fontWeight = FontWeight.Bold) },
                 actions = {
                     Box {
                         IconButton(onClick = { menuExpanded = true }) {
@@ -72,7 +72,12 @@ fun ChiefWardenDashboardScreen(navController: NavController) {
                             )
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         }
     ) { innerPadding ->

@@ -12,21 +12,25 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LeaveApplicationScreen() {
+fun LeaveApplicationScreen(navController: NavController) {
     val context = LocalContext.current
     val sessionPrefs = context.getSharedPreferences("session", Context.MODE_PRIVATE)
     val currentUserEmail = sessionPrefs.getString("currentUserEmail", "") ?: ""
@@ -62,7 +66,23 @@ fun LeaveApplicationScreen() {
     var degreeExpanded by remember { mutableStateOf(false) }
     var submissionStatus by remember { mutableStateOf("") }
 
-    Scaffold {
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Leave Application", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        }
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -71,8 +91,8 @@ fun LeaveApplicationScreen() {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start
         ) {
-            Text("Leave Application", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-            Spacer(modifier = Modifier.height(24.dp))
+            Text("Personal Information", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(value = studentName, onValueChange = {}, label = { Text("Name") }, readOnly = true, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(16.dp))
@@ -163,8 +183,8 @@ fun LeaveApplicationScreen() {
                 LeaveApplicationRepository.saveLeaveApplication(context, application)
                 submissionStatus = "Leave application submitted successfully!"
                  Toast.makeText(context, "Leave application submitted!", Toast.LENGTH_SHORT).show()
-            }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color(0xFF4CAF50))) {
-                Text("Submit", color = androidx.compose.ui.graphics.Color.White)
+            }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))) {
+                Text("Submit", color = Color.White)
             }
         }
     }
