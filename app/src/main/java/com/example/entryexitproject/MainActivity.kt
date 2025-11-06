@@ -38,14 +38,23 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val sharedPreferences = getSharedPreferences("user_details", MODE_PRIVATE)
                 val isLoggedIn = sharedPreferences.contains("studentName")
-                val startDestination = if (isLoggedIn) "entryexit" else "signup"
+                val startDestination = if (isLoggedIn) "dashboard" else "signup"
 
                 NavHost(navController = navController, startDestination = startDestination) {
                     composable("signup") {
-                        SignUpScreen(onSignUp = { navController.navigate("entryexit") })
+                        SignUpScreen(onSignUp = { navController.navigate("dashboard") })
+                    }
+                    composable("dashboard") {
+                        DashboardScreen(navController = navController)
                     }
                     composable("entryexit") {
                         EntryExitApp(navController = navController)
+                    }
+                    composable("leave_application") {
+                        LeaveApplicationScreen()
+                    }
+                    composable("day_scholar_entry") {
+                        DayScholarEntryScreen()
                     }
                 }
             }
