@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
                         DayScholarEntryScreen()
                     }
                     composable("leave_status") {
-                        LeaveStatusScreen()
+                        LeaveStatusScreen(navController = navController)
                     }
                 }
             }

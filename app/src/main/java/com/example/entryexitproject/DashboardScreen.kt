@@ -99,7 +99,7 @@ fun DashboardScreen(navController: NavController) {
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Entry/Exit QR")
+                Text("Hostel Entry/Exit QR")
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(

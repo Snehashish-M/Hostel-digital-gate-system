@@ -64,7 +64,8 @@ fun SignUpScreen(navController: NavController, onSignUp: () -> Unit) {
             onValueChange = { studentName = it },
             label = { Text(if (userType == "Student") "Student Name" else "Warden Name") },
             isError = showError && studentName.isBlank(),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.fillMaxWidth()
         )
         if (userType == "Student") {
             Spacer(modifier = Modifier.height(16.dp))
@@ -73,7 +74,8 @@ fun SignUpScreen(navController: NavController, onSignUp: () -> Unit) {
                 onValueChange = { rollNumber = it },
                 label = { Text("Roll Number") },
                 isError = showError && rollNumber.isBlank(),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -82,7 +84,8 @@ fun SignUpScreen(navController: NavController, onSignUp: () -> Unit) {
             onValueChange = { email = it },
             label = { Text("Email") },
             isError = showError && email.isBlank(),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
@@ -90,7 +93,8 @@ fun SignUpScreen(navController: NavController, onSignUp: () -> Unit) {
             onValueChange = { phoneNumber = it },
             label = { Text("Phone Number") },
             isError = showError && phoneNumber.isBlank(),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
@@ -99,7 +103,8 @@ fun SignUpScreen(navController: NavController, onSignUp: () -> Unit) {
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             isError = showError && password.isBlank(),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.fillMaxWidth()
         )
         if (showError) {
             Text(
@@ -131,10 +136,10 @@ fun SignUpScreen(navController: NavController, onSignUp: () -> Unit) {
                 }
                 onSignUp()
             }
-        }, shape = RoundedCornerShape(8.dp)) {
+        }, shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
             Text("Sign Up")
         }
-        TextButton(onClick = { navController.navigate("login") }) {
+        TextButton(onClick = { navController.navigate("login") }, modifier = Modifier.fillMaxWidth()) {
             Text("Already have an account? Sign In")
         }
     }
