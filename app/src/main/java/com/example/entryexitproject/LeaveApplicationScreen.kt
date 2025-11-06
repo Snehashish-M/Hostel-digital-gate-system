@@ -1,6 +1,7 @@
 package com.example.entryexitproject
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,13 +30,9 @@ fun LeaveApplicationScreen() {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("user_details", Context.MODE_PRIVATE)
     val studentName = sharedPreferences.getString("studentName", "") ?: ""
-    val email = sharedPreferences.getString("email", "") ?: ""
-    val phoneNumber = sharedPreferences.getString("phoneNumber", "") ?: ""
     val rollNumber = sharedPreferences.getString("rollNumber", "") ?: ""
 
     var degree by remember { mutableStateOf("Please Select") }
-    var emailDuringLeave by remember { mutableStateOf("") }
-    var phoneDuringLeave by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
     var transport by remember { mutableStateOf("") }
     var block by remember { mutableStateOf("") }
@@ -61,6 +58,7 @@ fun LeaveApplicationScreen() {
 
     val degrees = listOf("B.Tech", "M.Tech", "Ph.D", "JRF")
     var degreeExpanded by remember { mutableStateOf(false) }
+    var submissionStatus by remember { mutableStateOf("") }
 
     Scaffold {
         Column(
@@ -71,14 +69,10 @@ fun LeaveApplicationScreen() {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start
         ) {
-            Text("Personal Information", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            Spacer(modifier = Modifier.height(16.dp))
+            Text("Leave Application", fontWeight = FontWeight.Bold, fontSize = 24.sp)
+            Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(value = studentName, onValueChange = {}, label = { Text("Name") }, readOnly = true, modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(value = email, onValueChange = {}, label = { Text("Email") }, readOnly = true, modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(value = phoneNumber, onValueChange = {}, label = { Text("Phone Number") }, readOnly = true, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(value = rollNumber, onValueChange = {}, label = { Text("Student Roll Number") }, readOnly = true, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(16.dp))
@@ -99,7 +93,7 @@ fun LeaveApplicationScreen() {
                 }
             }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Text("Details of Leave/Absence", fontWeight = FontWeight.Bold, fontSize = 20.sp)
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -142,7 +136,32 @@ fun LeaveApplicationScreen() {
             OutlinedTextField(value = parentsPhone, onValueChange = { parentsPhone = it }, label = { Text("Parent's Phone during leave") }, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(32.dp))
 
-            Button(onClick = { /* Handle submission */ }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color(0xFF4CAF50))) {
+            if (submissionStatus.isNotEmpty()) {
+                Text(submissionStatus, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            Button(onClick = {
+                val application = LeaveApplication(
+                    studentName = studentName,
+                    rollNumber = rollNumber,
+                    degree = degree,
+                    leavingDate = selectedLeavingDate?.let { SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date(it)) } ?: "",
+                    leavingTime = selectedLeavingTime?.let { "%02d:%02d".format(it.first, it.second) } ?: "",
+                    returnDate = selectedReturnDate?.let { SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date(it)) } ?: "",
+                    returnTime = selectedReturnTime?.let { "%02d:%02d".format(it.first, it.second) } ?: "",
+                    duration = duration,
+                    transport = transport,
+                    block = block,
+                    hostel = hostel,
+                    purpose = purpose,
+                    address = address,
+                    parentsPhone = parentsPhone
+                )
+                LeaveApplicationRepository.leaveApplications.add(application)
+                submissionStatus = "Leave application submitted successfully!"
+                 Toast.makeText(context, "Leave application submitted!", Toast.LENGTH_SHORT).show()
+            }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color(0xFF4CAF50))) {
                 Text("Submit", color = androidx.compose.ui.graphics.Color.White)
             }
         }

@@ -36,16 +36,29 @@ class MainActivity : ComponentActivity() {
         setContent {
             EntryExitProjectTheme(darkTheme = false) {
                 val navController = rememberNavController()
-                val sharedPreferences = getSharedPreferences("user_details", MODE_PRIVATE)
-                val isLoggedIn = sharedPreferences.contains("studentName")
-                val startDestination = if (isLoggedIn) "dashboard" else "signup"
+                val sessionPrefs = getSharedPreferences("session", MODE_PRIVATE)
+                val currentUserEmail = sessionPrefs.getString("currentUserEmail", null)
+
+                val startDestination = if (currentUserEmail != null) {
+                    val userPrefs = getSharedPreferences(currentUserEmail, MODE_PRIVATE)
+                    val userType = userPrefs.getString("userType", "Student")
+                    if (userType == "Student") "dashboard" else "chief_warden_dashboard"
+                } else {
+                    "login"
+                }
 
                 NavHost(navController = navController, startDestination = startDestination) {
+                    composable("login") {
+                        LoginScreen(navController = navController)
+                    }
                     composable("signup") {
-                        SignUpScreen(onSignUp = { navController.navigate("dashboard") })
+                        SignUpScreen(onSignUp = { navController.navigate("login") })
                     }
                     composable("dashboard") {
                         DashboardScreen(navController = navController)
+                    }
+                    composable("chief_warden_dashboard") {
+                        ChiefWardenDashboardScreen(navController = navController)
                     }
                     composable("entryexit") {
                         EntryExitApp(navController = navController)
@@ -55,6 +68,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("day_scholar_entry") {
                         DayScholarEntryScreen()
+                    }
+                    composable("leave_status") {
+                        LeaveStatusScreen()
                     }
                 }
             }
@@ -66,56 +82,22 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun EntryExitApp(navController: NavController) {
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("user_details", Context.MODE_PRIVATE)
-    val studentName = sharedPreferences.getString("studentName", "") ?: ""
-    val rollNumber = sharedPreferences.getString("rollNumber", "") ?: ""
-    val email = sharedPreferences.getString("email", "") ?: ""
-    val phoneNumber = sharedPreferences.getString("phoneNumber", "") ?: ""
+    val sessionPrefs = context.getSharedPreferences("session", Context.MODE_PRIVATE)
+    val currentUserEmail = sessionPrefs.getString("currentUserEmail", "") ?: ""
+    val userPrefs = context.getSharedPreferences(currentUserEmail, Context.MODE_PRIVATE)
+    val studentName = userPrefs.getString("studentName", "") ?: ""
+    val rollNumber = userPrefs.getString("rollNumber", "") ?: ""
+    val phoneNumber = userPrefs.getString("phoneNumber", "") ?: ""
 
     var location by remember { mutableStateOf("") }
     var qrCodeBitmap by remember { mutableStateOf<Bitmap?>(null) }
-    var menuExpanded by remember { mutableStateOf(false) }
-    var showDetailsDialog by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { },
-                navigationIcon = {
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "More options")
-                        }
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Personal Details") },
-                                onClick = {
-                                    showDetailsDialog = true
-                                    menuExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Logout") },
-                                onClick = {
-                                    sharedPreferences.edit { clear() }
-                                    navController.navigate("signup") { popUpTo(0) }
-                                    menuExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
+    Scaffold {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(it)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -157,27 +139,6 @@ fun EntryExitApp(navController: NavController) {
                 )
             }
         }
-    }
-
-    if (showDetailsDialog) {
-        AlertDialog(
-            onDismissRequest = { showDetailsDialog = false },
-            title = { Text("Personal Details") },
-            text = {
-                Column {
-                    Text("Name: $studentName")
-                    Text("Roll Number: $rollNumber")
-                    Text("Email: $email")
-                    Text("Phone Number: $phoneNumber")
-                }
-            },
-            confirmButton = {
-                Button(onClick = { showDetailsDialog = false }, shape = RoundedCornerShape(8.dp)) {
-                    Text("Close")
-                }
-            },
-            shape = RoundedCornerShape(8.dp)
-        )
     }
 }
 
